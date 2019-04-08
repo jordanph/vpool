@@ -1,11 +1,20 @@
 pragma solidity >=0.4.21 <0.6.0;
 
+contract ERC20Token {
+  function transfer(address _to, uint256 _amount) public returns(bool success);
+  function balanceOf(address _owner) public view returns(uint256 balance);
+}
+
 contract VPool {
   uint256 public totalMintedSupply;             // The current total minted supply
   mapping(address => uint256) public balanceOf; // MINT balance of each address
+  address public owner;
+  ERC20Token vthor;
 
-  constructor() public {
+  constructor(address vthorAddress) public {
     totalMintedSupply = 0;
+    owner = msg.sender;
+    vthor = ERC20Token(vthorAddress);
   }
 
   function deposit() public payable {
@@ -18,7 +27,7 @@ contract VPool {
       uint256 mintAmount = (totalLiquidity/currentBalance) * msg.value;
       
       totalMintedSupply = totalMintedSupply + mintAmount;
-      balanceOf[msg.sender] = mintAmount;
+      balanceOf[msg.sender] += mintAmount;
     } else {
       uint256 initialMinted = address(this).balance;
       totalMintedSupply = initialMinted;
@@ -49,4 +58,14 @@ contract VPool {
 
     msg.sender.transfer(amount);
   }
+
+  function withdrawEnergy() public {
+    assert(msg.sender == owner);
+
+    uint256 vthorBalance = vthor.balanceOf(address(this));
+
+    vthor.transfer(owner, vthorBalance);
+  }
+
+  function() external payable { } // accept transfers
 }
