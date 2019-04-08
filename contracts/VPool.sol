@@ -1,20 +1,24 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 contract ERC20Token {
-  function transfer(address _to, uint256 _amount) public returns(bool success);
   function balanceOf(address _owner) public view returns(uint256 balance);
+}
+
+contract Convertion {
+  function getTokenToEthInputPrice(uint256 tokens_sold) public view returns(uint256 amount_vet);
+  function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint deadline) public returns (uint256 vet_bought);
 }
 
 contract VPool {
   uint256 public totalMintedSupply;             // The current total minted supply
   mapping(address => uint256) public balanceOf; // MINT balance of each address
-  address public owner;
   ERC20Token vthor;
+  Convertion conversion;
 
-  constructor(address vthorAddress) public {
+  constructor(address vthorAddress, address conversionAddress) public {
     totalMintedSupply = 0;
-    owner = msg.sender;
     vthor = ERC20Token(vthorAddress);
+    conversion = Convertion(conversionAddress);
   }
 
   function deposit() public payable {
@@ -59,12 +63,14 @@ contract VPool {
     msg.sender.transfer(amount);
   }
 
-  function withdrawEnergy() public {
-    assert(msg.sender == owner);
-
+  function convertEnergy() public {
     uint256 vthorBalance = vthor.balanceOf(address(this));
 
-    vthor.transfer(owner, vthorBalance);
+    uint256 amountVET = conversion.getTokenToEthInputPrice(vthorBalance);
+
+    uint256 timeout = 30 minutes;
+
+    conversion.tokenToEthSwapInput(vthorBalance, amountVET, timeout);
   }
 
   function() external payable { } // accept transfers
