@@ -2,6 +2,7 @@ pragma solidity >=0.4.21 <0.6.0;
 
 contract ERC20Token {
   function balanceOf(address _owner) public view returns(uint256 balance);
+  function approve(address _spender, uint256 _value) public returns (bool success);
 }
 
 contract Convertion {
@@ -12,8 +13,8 @@ contract Convertion {
 contract VPool {
   uint256 public totalMintedSupply;             // The current total minted supply
   mapping(address => uint256) public balanceOf; // MINT balance of each address
-  ERC20Token vthor;
-  Convertion conversion;
+  ERC20Token public vthor;                      // vTHOR contract
+  Convertion public conversion;                 // Conversion contract
 
   constructor(address vthorAddress, address conversionAddress) public {
     totalMintedSupply = 0;
@@ -63,14 +64,19 @@ contract VPool {
     msg.sender.transfer(amount);
   }
 
-  function convertEnergy() public {
+  function convertEnergy() public returns (uint256) {
     uint256 vthorBalance = vthor.balanceOf(address(this));
+
+    vthor.approve(address(conversion), vthorBalance);
 
     uint256 amountVET = conversion.getTokenToEthInputPrice(vthorBalance);
 
-    uint256 timeout = 30 minutes;
+    uint256 deadline = now + 1 minutes;
+    uint slippageAmount = 975;
 
-    conversion.tokenToEthSwapInput(vthorBalance, amountVET, timeout);
+    uint256 amountReceived = conversion.tokenToEthSwapInput(vthorBalance, (amountVET * slippageAmount)/1000, deadline);
+
+    amountReceived;
   }
 
   function() external payable { } // accept transfers
