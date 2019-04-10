@@ -29,7 +29,7 @@ contract VPool {
 
     if(totalLiquidity > 0) {
       uint256 currentBalance = address(this).balance - msg.value;
-      uint256 mintAmount = (totalLiquidity/currentBalance) * msg.value;
+      uint256 mintAmount = (totalLiquidity * msg.value) / currentBalance;
       
       totalMintedSupply = totalMintedSupply + mintAmount;
       balanceOf[msg.sender] += mintAmount;
