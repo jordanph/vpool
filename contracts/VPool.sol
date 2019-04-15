@@ -24,12 +24,13 @@ contract VPool {
 
   function deposit() public payable {
     assert(msg.value > 0);
+    require(msg.value <= 100 ether, "During the Alpha phase, deposits are limited to 100VET. This will be increased once auditing has been completed.");
 
     uint256 totalLiquidity = totalMintedSupply;
 
     if(totalLiquidity > 0) {
       uint256 currentBalance = address(this).balance - msg.value;
-      uint256 mintAmount = (totalLiquidity/currentBalance) * msg.value;
+      uint256 mintAmount = msg.value * totalLiquidity/currentBalance;
       
       totalMintedSupply = totalMintedSupply + mintAmount;
       balanceOf[msg.sender] += mintAmount;
@@ -41,25 +42,35 @@ contract VPool {
   }
 
   function withdraw(uint256 amount) public {
-    assert(amount > 0);
+    require(amount > 0, "You must withdraw more than 0 VET.");
 
     uint256 totalLiquidity = totalMintedSupply;
     assert(totalLiquidity > 0);
 
     uint256 senderCurrentBalance = balanceOf[msg.sender];
 
-    assert(senderCurrentBalance > 0);
+    require(senderCurrentBalance > 0, "You must have some VET deposited.");
 
     uint256 senderVETBalance = (address(this).balance * senderCurrentBalance/totalLiquidity);
 
-    assert(senderVETBalance >= amount);
+    require(senderVETBalance >= (amount - 1), "You do not the required balance");
 
-    uint256 senderNewVETBalance = senderVETBalance - amount;
+    // rounding errors: user is withdrawing entire balance
+    if (amount - senderVETBalance <= 1) {
+      balanceOf[msg.sender] = 0;
 
-    uint256 senderNewBalance = (senderCurrentBalance * senderNewVETBalance/senderVETBalance);
+      totalMintedSupply = totalMintedSupply - senderCurrentBalance;
+    } else {
 
-    balanceOf[msg.sender] = senderNewBalance;
-    totalMintedSupply = totalMintedSupply - (senderCurrentBalance - senderNewBalance);
+      assert(senderVETBalance > amount);
+
+      uint256 senderNewVETBalance = senderVETBalance - amount;
+
+      uint256 senderNewBalance = (senderCurrentBalance * senderNewVETBalance/senderVETBalance);
+
+      balanceOf[msg.sender] = senderNewBalance;
+      totalMintedSupply = totalMintedSupply - (senderCurrentBalance - senderNewBalance);
+    }
 
     msg.sender.transfer(amount);
   }

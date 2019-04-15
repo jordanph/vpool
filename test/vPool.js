@@ -5,7 +5,7 @@ contract("VPool", async accounts => {
   let instance;
 
   beforeEach(async () => {
-    instance = await VPool.new();
+    instance = await VPool.new("0x0000000000000000000000000000456e65726779", "0xB74C4EBd95F70Dd9794d8c49053a297689950b63");
   });
 
   it("should set the initial total minted supply to 0", async () => {
@@ -119,7 +119,7 @@ contract("VPool", async accounts => {
         assert.equal(initalMintedSupply, VETAmount);
         assert.equal(senderBalance, VETAmount);
 
-        await instance.withdraw.sendTransaction(VETAmount, {
+        await instance.withdraw.sendTransaction(VETAmount + 1, {
           from: accounts[4]
         });
 
