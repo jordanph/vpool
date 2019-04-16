@@ -10,16 +10,37 @@ contract Convertion {
   function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint deadline) public returns (uint256 vet_bought);
 }
 
+contract NodeContract {
+  enum strengthLevel {
+    None,
+
+    // Normal Token
+    Strength,
+    Thunder,
+    Mjolnir,
+
+    // X Token
+    VeThorX,
+    StrengthX,
+    ThunderX,
+    MjolnirX
+  }
+
+  function applyUpgrade(strengthLevel _toLvl) public;
+}
+
 contract VPool {
   uint256 public totalMintedSupply;             // The current total minted supply
   mapping(address => uint256) public balanceOf; // MINT balance of each address
   ERC20Token public vthor;                      // vTHOR contract
   Convertion public conversion;                 // Conversion contract
+  NodeContract public node;                     // Node contract
 
-  constructor(address vthorAddress, address conversionAddress) public {
+  constructor(address vthorAddress, address conversionAddress, address nodeAddress) public {
     totalMintedSupply = 0;
     vthor = ERC20Token(vthorAddress);
     conversion = Convertion(conversionAddress);
+    node = NodeContract(nodeAddress);
   }
 
   function deposit() public payable {
@@ -88,6 +109,10 @@ contract VPool {
     uint256 amountReceived = conversion.tokenToEthSwapInput(vthorBalance, (amountVET * slippageAmount)/1000, deadline);
 
     amountReceived;
+  }
+
+  function upgradeNodeStatus(NodeContract.strengthLevel toLvl) public {
+    node.applyUpgrade(toLvl);
   }
 
   function() external payable { } // accept transfers
