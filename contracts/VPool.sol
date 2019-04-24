@@ -36,6 +36,21 @@ contract VPool {
   Convertion public conversion;                 // Conversion contract
   NodeContract public node;                     // Node contract
 
+  event BalanceUpdate(
+    bool deposit,
+    address indexed sender,
+    uint256 depositedAmount,
+    uint256 userBalance,
+    uint256 totalMintedSupply,
+    uint256 contractBalance
+  );
+
+  event Conversion(
+    uint256 thorConverted,
+    uint256 vetReceived,
+    uint256 contractBalance
+  );
+
   constructor(address vthorAddress, address conversionAddress, address nodeAddress) public {
     totalMintedSupply = 0;
     vthor = ERC20Token(vthorAddress);
@@ -60,6 +75,15 @@ contract VPool {
       totalMintedSupply = initialMinted;
       balanceOf[msg.sender] = initialMinted;
     }
+
+    emit BalanceUpdate(
+      true,
+      msg.sender,
+      msg.value,
+      balanceOf[msg.sender],
+      totalMintedSupply,
+      address(this).balance
+    );
   }
 
   function withdraw(uint256 amount) public {
@@ -94,6 +118,15 @@ contract VPool {
     }
 
     msg.sender.transfer(amount);
+
+    emit BalanceUpdate(
+      false,
+      msg.sender,
+      amount,
+      balanceOf[msg.sender],
+      totalMintedSupply,
+      address(this).balance
+    );
   }
 
   function convertEnergy() public returns (uint256) {
@@ -107,6 +140,12 @@ contract VPool {
     uint slippageAmount = 975;
 
     uint256 amountReceived = conversion.tokenToEthSwapInput(vthorBalance, (amountVET * slippageAmount)/1000, deadline);
+
+    emit Conversion(
+      vthorBalance,
+      amountReceived,
+      address(this).balance
+    );
 
     amountReceived;
   }
