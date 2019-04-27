@@ -1,15 +1,41 @@
 {
-  "contractName": "NodeContract",
+  "contractName": "MPPContract",
   "abi": [
     {
       "constant": false,
       "inputs": [
         {
-          "name": "_toLvl",
-          "type": "uint8"
+          "name": "_self",
+          "type": "address"
+        },
+        {
+          "name": "_user",
+          "type": "address"
         }
       ],
-      "name": "applyUpgrade",
+      "name": "addUser",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_self",
+          "type": "address"
+        },
+        {
+          "name": "credit",
+          "type": "uint256"
+        },
+        {
+          "name": "recoveryRate",
+          "type": "uint256"
+        }
+      ],
+      "name": "setCreditPlan",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -14864,7 +14890,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.5",
-  "updatedAt": "2019-04-27T01:38:28.560Z",
+  "updatedAt": "2019-04-27T01:38:28.571Z",
   "devdoc": {
     "methods": {}
   },
