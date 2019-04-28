@@ -44,18 +44,18 @@ contract VPool {
   address public owner;                         // Account authorised to run conversion
   uint256 public lockOutTime;                   // Time locked out until another conversion can occur
 
+  enum TransactionType {
+    Deposit,
+    Withdraw,
+    Conversion
+  }
+
   event BalanceUpdate(
-    bool deposit,
+    TransactionType transactionType,
     address indexed sender,
     uint256 depositedAmount,
     uint256 userBalance,
     uint256 totalMintedSupply,
-    uint256 contractBalance
-  );
-
-  event Conversion(
-    uint256 thorConverted,
-    uint256 vetReceived,
     uint256 contractBalance
   );
 
@@ -93,7 +93,7 @@ contract VPool {
     }
 
     emit BalanceUpdate(
-      true,
+      TransactionType.Deposit,
       msg.sender,
       msg.value,
       balanceOf[msg.sender],
@@ -137,7 +137,7 @@ contract VPool {
     msg.sender.transfer(amount);
 
     emit BalanceUpdate(
-      false,
+      TransactionType.Withdraw,
       msg.sender,
       amount,
       balanceOf[msg.sender],
@@ -163,9 +163,12 @@ contract VPool {
 
     lockOutTime = now + 1 weeks;
 
-    emit Conversion(
-      vthorBalance,
+    emit BalanceUpdate(
+      TransactionType.Conversion,
+      msg.sender,
       amountReceived,
+      0,
+      totalMintedSupply,
       address(this).balance
     );
 
