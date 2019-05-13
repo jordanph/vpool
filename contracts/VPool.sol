@@ -1,6 +1,6 @@
-import { SafeMath } from "./SafeMath.sol";
-
 pragma solidity >=0.4.21 <0.6.0;
+
+import { SafeMath } from "./SafeMath.sol";
 
 contract ERC20Token {
   function balanceOf(address _owner) public view returns(uint256 balance);
@@ -78,12 +78,10 @@ contract VPool {
     require(msg.sender != owner, "Please don't waste people's hard earnt VTHO Mr.Owner >:(");
     require(msg.value <= 100 ether, "During the Alpha phase, deposits are limited to 100VET. This will be increased once auditing has been completed.");
 
-    uint256 totalLiquidity = totalMintedSupply;
-
-    if(totalLiquidity > 0) {
+    if(totalMintedSupply > 0) {
       uint256 currentBalance = address(this).balance - msg.value;
-      uint256 mintAmount = SafeMath.mul(msg.value, totalLiquidity)/currentBalance;
-      
+      uint256 mintAmount = SafeMath.mul(msg.value, totalMintedSupply)/currentBalance;
+
       totalMintedSupply = SafeMath.add(totalMintedSupply, mintAmount);
       balanceOf[msg.sender] = SafeMath.add(balanceOf[msg.sender], mintAmount);
     } else {
@@ -106,14 +104,13 @@ contract VPool {
     require(msg.sender != owner, "Please don't waste people's hard earnt VTHO Mr.Owner >:(");
     require(amount > 0, "You must withdraw more than 0 VET.");
 
-    uint256 totalLiquidity = totalMintedSupply;
-    assert(totalLiquidity > 0);
+    assert(totalMintedSupply > 0);
 
     uint256 senderCurrentBalance = balanceOf[msg.sender];
 
     require(senderCurrentBalance > 0, "You must have some VET deposited.");
 
-    uint256 senderVETBalance = SafeMath.mul(address(this).balance, senderCurrentBalance)/totalLiquidity;
+    uint256 senderVETBalance = SafeMath.mul(address(this).balance, senderCurrentBalance)/totalMintedSupply;
 
     require(senderVETBalance >= (amount - 1), "You do not the required balance");
 
@@ -123,9 +120,6 @@ contract VPool {
 
       totalMintedSupply = SafeMath.sub(totalMintedSupply, senderCurrentBalance);
     } else {
-
-      assert(senderVETBalance > amount);
-
       uint256 senderNewVETBalance = senderVETBalance - amount;
 
       uint256 senderNewBalance = SafeMath.mul(senderCurrentBalance, senderNewVETBalance)/senderVETBalance;
@@ -152,12 +146,12 @@ contract VPool {
     uint256 vthorBalance = vthor.balanceOf(address(this));
 
     uint256 linearLockOutTime = 1 weeks * vthorBalance / 20000 ether;
-    
+
     require(lockOutTime - linearLockOutTime < now, "Can only convert according to linear lockout time.");
 
     vthor.approve(address(conversion), vthorBalance);
 
-    uint256 deadline = now + 1 minutes;
+    uint256 deadline = now + 5 minutes;
 
     uint256 amountReceived = conversion.tokenToEthSwapInput(vthorBalance, amountVET, deadline);
 
