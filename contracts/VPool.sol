@@ -64,7 +64,7 @@ contract VPool {
     vthor = ERC20Token(vthorAddress);
     conversion = Convertion(conversionAddress);
     node = NodeContract(nodeAddress);
-    lockOutTime = now;
+    lockOutTime = now + 1 weeks;
     owner = msg.sender;
 
     MPPContract mpp = MPPContract(mppAddress);
@@ -173,5 +173,15 @@ contract VPool {
     node.applyUpgrade(toLvl);
   }
 
-  function() external payable { } // accept transfers
+  // accept transfers
+  function() external payable {
+    emit BalanceUpdate(
+      TransactionType.Deposit,
+      msg.sender,
+      msg.value,
+      balanceOf[msg.sender],
+      totalMintedSupply,
+      address(this).balance
+    );
+  }
 }
