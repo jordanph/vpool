@@ -76,7 +76,6 @@ contract VPool {
   function deposit() public payable {
     assert(msg.value > 0);
     require(msg.sender != owner, "Please don't waste people's hard earnt VTHO Mr.Owner >:(");
-    require(msg.value <= 100 ether, "During the Alpha phase, deposits are limited to 100VET. This will be increased once auditing has been completed.");
 
     if(totalMintedSupply > 0) {
       uint256 currentBalance = address(this).balance - msg.value;
