@@ -173,14 +173,5 @@ contract VPool {
   }
 
   // accept transfers
-  function() external payable {
-    emit BalanceUpdate(
-      TransactionType.Deposit,
-      msg.sender,
-      msg.value,
-      balanceOf[msg.sender],
-      totalMintedSupply,
-      address(this).balance
-    );
-  }
+  function() external payable { }
 }
